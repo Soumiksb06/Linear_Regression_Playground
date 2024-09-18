@@ -107,14 +107,14 @@ if model_type == 'Linear Regression':
     
     **Formula**: 
     $$
-    Y = \beta_0 + \beta_1 X + \epsilon
+    Y = \\beta_0 + \\beta_1 X + \\epsilon
     $$
     where:
     - $Y$ is the dependent variable
     - $X$ is the independent variable
-    - $\beta_0$ is the intercept
-    - $\beta_1$ is the slope
-    - $\epsilon$ is the error term
+    - $\\beta_0$ is the intercept
+    - $\\beta_1$ is the slope
+    - $\\epsilon$ is the error term
     """)
 
 elif model_type == 'Polynomial Regression':
@@ -124,13 +124,13 @@ elif model_type == 'Polynomial Regression':
     
     **Formula**:
     $$
-    Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \cdots + \beta_n X^n + \epsilon
+    Y = \\beta_0 + \\beta_1 X + \\beta_2 X^2 + \\cdots + \\beta_n X^n + \\epsilon
     $$
     where:
     - $Y$ is the dependent variable
     - $X$ is the independent variable
-    - $\beta_0, \beta_1, ..., \beta_n$ are the coefficients
-    - $\epsilon$ is the error term
+    - $\\beta_0, \\beta_1, ..., \\beta_n$ are the coefficients
+    - $\\epsilon$ is the error term
     """)
 
 elif model_type == 'SVM':
@@ -169,7 +169,7 @@ elif model_type == 'Perceptron':
     
     **Formula**: The prediction is based on:
     $$
-    y = \text{sign}(w^T x + b)
+    y = \\text{sign}(w^T x + b)
     $$
     where:
     - $w$ is the weight vector
@@ -178,10 +178,10 @@ elif model_type == 'Perceptron':
     
     **Activation Function**:
     $$
-    f(z) = \begin{cases}
-        1 & \text{if } z > 0 \\
-        0 & \text{otherwise}
-    \end{cases}
+    f(z) = \\begin{cases}
+        1 & \\text{if } z > 0 \\\\
+        0 & \\text{otherwise}
+    \\end{cases}
     $$
     where $z = w^T x + b$
     """)
@@ -194,19 +194,19 @@ elif model_type == 'Image Classification':
     **Key Components**:
     1. **Convolutional Layers**: Extract features from the input image
     $$
-    \text{Conv}(X) = \sigma(W * X + b)
+    \\text{Conv}(X) = \\sigma(W * X + b)
     $$
-    where $*$ denotes convolution, $W$ are learned filters, $b$ is bias, and $\sigma$ is an activation function.
+    where $*$ denotes convolution, $W$ are learned filters, $b$ is bias, and $\\sigma$ is an activation function.
     
     2. **Inverted Residual Blocks**: Efficient building blocks of MobileNetV2
     $$
-    \text{IRB}(X) = X + F(X)
+    \\text{IRB}(X) = X + F(X)
     $$
     where $F(X)$ is a sequence of operations including depthwise convolution and pointwise convolution.
     
     3. **Softmax Activation**: For final class probabilities
     $$
-    \text{Softmax}(z_i) = \frac{e^{z_i}}{\sum_j e^{z_j}}
+    \\text{Softmax}(z_i) = \\frac{e^{z_i}}{\\sum_j e^{z_j}}
     $$
     where $z_i$ are the logits for each class.
     """)
