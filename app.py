@@ -87,6 +87,90 @@ if model_type != 'Image Classification':
     n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
     noise = st.sidebar.slider('Noise Level', 0, 5, 2)
 
+# Model descriptions and formulas
+if model_type == 'Linear Regression':
+    st.write("""
+    ## Linear Regression
+    **Description**: Linear regression models the relationship between a scalar response \( Y \) and one or more explanatory variables \( X \). The model assumes a linear relationship between the variables.
+    
+    **Formula**: 
+    \[
+    Y = \beta_0 + \beta_1 X + \epsilon
+    \]
+    where:
+    - \( Y \) is the dependent variable
+    - \( X \) is the independent variable
+    - \( \beta_0 \) is the intercept
+    - \( \beta_1 \) is the slope
+    - \( \epsilon \) is the error term
+    """)
+
+elif model_type == 'Polynomial Regression':
+    st.write("""
+    ## Polynomial Regression
+    **Description**: Polynomial regression is a form of regression where the relationship between the independent variable \( X \) and the dependent variable \( Y \) is modeled as an \( n \)-degree polynomial.
+    
+    **Formula**:
+    \[
+    Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \cdots + \beta_n X^n + \epsilon
+    \]
+    where:
+    - \( Y \) is the dependent variable
+    - \( X \) is the independent variable
+    - \( \beta_0, \beta_1, ..., \beta_n \) are the coefficients
+    - \( \epsilon \) is the error term
+    """)
+
+elif model_type == 'SVM':
+    st.write("""
+    ## Support Vector Machine (SVM)
+    **Description**: SVM is a supervised machine learning model used for classification tasks. It finds the hyperplane that best separates the data into different classes.
+    
+    **Decision Boundary**: The hyperplane is defined as:
+    \[
+    w^T x + b = 0
+    \]
+    where:
+    - \( w \) is the weight vector
+    - \( x \) is the input vector
+    - \( b \) is the bias term
+    """)
+
+elif model_type == 'K-Means Clustering (3D)':
+    st.write("""
+    ## K-Means Clustering
+    **Description**: K-Means is an unsupervised learning algorithm that divides the data into \( k \) clusters. Each data point belongs to the cluster with the nearest mean.
+    
+    **Objective**: Minimize the sum of squared distances between data points and their respective cluster centers:
+    \[
+    \sum_{i=1}^{k} \sum_{x \in C_i} \| x - \mu_i \|^2
+    \]
+    where:
+    - \( C_i \) is the set of points in cluster \( i \)
+    - \( \mu_i \) is the mean of cluster \( i \)
+    """)
+
+elif model_type == 'Perceptron':
+    st.write("""
+    ## Perceptron
+    **Description**: The perceptron is a linear classifier used for binary classification tasks. It updates its weights iteratively to find a hyperplane that separates the data.
+    
+    **Formula**: The prediction is based on:
+    \[
+    y = \text{sign}(w^T x + b)
+    \]
+    where:
+    - \( w \) is the weight vector
+    - \( x \) is the input vector
+    - \( b \) is the bias term
+    """)
+
+elif model_type == 'Image Classification':
+    st.write("""
+    ## Image Classification using MobileNetV2
+    **Description**: MobileNetV2 is a lightweight deep learning model designed for mobile and embedded vision applications. It performs efficient image classification tasks on a wide variety of objects.
+    """)
+
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
     # For Polynomial Regression, use a polynomial data generator
@@ -156,11 +240,10 @@ elif model_type == 'Perceptron':
     plot_decision_boundary(perceptron_model, X, Y, "Perceptron Decision Boundary")
 
 elif model_type == 'Image Classification':
-    st.sidebar.write("### Upload an Image to Classify")
+    # Upload and classify an image
+    st.sidebar.write("Upload an image to classify:")
     uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
     if uploaded_file is not None:
-        # Display the uploaded image
         image = Image.open(uploaded_file)
         st.image(image, caption="Uploaded Image", use_column_width=True)
 
