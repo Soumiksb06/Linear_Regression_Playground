@@ -158,17 +158,25 @@ elif model_type == 'Image Classification':
 
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
-    X, Y = make_classification(n_samples=n_points, n_features=1, n_informative=1, n_clusters_per_class=1, noise=noise)
-    X = X.reshape(-1, 1)
     if model_type == 'Linear Regression':
+        # Generate linear data
+        X = np.random.rand(n_points, 1) * 10
+        Y = 2 * X.ravel() + np.random.randn(n_points) * noise
+        X = X.reshape(-1, 1)
         model = LinearRegression()
         model.fit(X, Y)
         Y_pred = model.predict(X)
         plot_data(X, Y, Y_pred=Y_pred, title="Linear Regression")
+
     elif model_type == 'Polynomial Regression':
-        poly_model = make_pipeline(PolynomialFeatures(3), LinearRegression())
-        poly_model.fit(X, Y)
-        Y_pred = poly_model.predict(X)
+        # Generate polynomial data
+        X = np.random.rand(n_points, 1) * 10
+        degree = st.sidebar.slider('Degree of Polynomial', 2, 5, 2)
+        poly = PolynomialFeatures(degree)
+        X_poly = poly.fit_transform(X)
+        model = LinearRegression()
+        model.fit(X_poly, Y)
+        Y_pred = model.predict(X_poly)
         plot_data(X, Y, Y_pred=Y_pred, title="Polynomial Regression")
 
 elif model_type == 'SVM':
