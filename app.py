@@ -9,10 +9,10 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
 from sklearn.datasets import make_classification, make_blobs
 
-# Function to plot data
+# Function to plot 2D data
 def plot_data(X, Y=None, labels=None, title="Data Plot", xlabel="X", ylabel="Y"):
     fig = go.Figure()
-    
+
     if labels is not None:
         fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', marker=dict(color=labels, colorscale='Viridis')))
     else:
@@ -21,7 +21,7 @@ def plot_data(X, Y=None, labels=None, title="Data Plot", xlabel="X", ylabel="Y")
     fig.update_layout(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
     st.plotly_chart(fig)
 
-# Plot decision boundary for classification models
+# Function to plot decision boundary for classification models
 def plot_decision_boundary(model, X, Y, title):
     x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
     y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
@@ -35,13 +35,26 @@ def plot_decision_boundary(model, X, Y, title):
     fig.add_trace(go.Contour(x=np.arange(x_min, x_max, h), y=np.arange(y_min, y_max, h), z=Z, showscale=False, opacity=0.3, colorscale='RdBu', hoverinfo='skip'))
     st.plotly_chart(fig)
 
+# Function to plot 3D data
+def plot_3d_data(X, labels=None, title="3D Data Plot", xlabel="X", ylabel="Y", zlabel="Z"):
+    fig = go.Figure()
+
+    if labels is not None:
+        fig.add_trace(go.Scatter3d(x=X[:, 0], y=X[:, 1], z=X[:, 2], mode='markers',
+                                   marker=dict(color=labels, size=5, colorscale='Viridis', opacity=0.8)))
+    else:
+        fig.add_trace(go.Scatter3d(x=X[:, 0], y=X[:, 1], z=X[:, 2], mode='markers',
+                                   marker=dict(size=5, opacity=0.8)))
+
+    fig.update_layout(scene=dict(xaxis_title=xlabel, yaxis_title=ylabel, zaxis_title=zlabel), title=title)
+    st.plotly_chart(fig)
+
 # Title and introduction
-st.title('Interactive Machine Learning Models')
-st.write("Explore different machine learning models interactively. Adjust the parameters and visualize the results.")
+st.title('Interactive Machine Learning Models with 3D Clustering Visualization')
 
 # Sidebar for model selection
 st.sidebar.header("Model and Data Controls")
-model_type = st.sidebar.selectbox('Choose Model', ('Linear Regression', 'Polynomial Regression', 'SVM', 'K-Means Clustering', 'Perceptron'))
+model_type = st.sidebar.selectbox('Choose Model', ('Linear Regression', 'Polynomial Regression', 'SVM', 'K-Means Clustering (3D)', 'Perceptron'))
 
 # Number of data points and noise
 n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
@@ -87,10 +100,10 @@ elif model_type == 'SVM':
     # Plot decision boundary
     plot_decision_boundary(svm_model, X, Y, "SVM Decision Boundary")
 
-elif model_type == 'K-Means Clustering':
-    # Generate random data for clustering
-    X, _ = make_blobs(n_samples=n_points, centers=3, cluster_std=noise, random_state=42)
-    plot_data(X, title="Generated Clustering Data", xlabel="Feature 1", ylabel="Feature 2")
+elif model_type == 'K-Means Clustering (3D)':
+    # Generate random data for 3D clustering
+    X, _ = make_blobs(n_samples=n_points, centers=4, n_features=3, cluster_std=noise, random_state=42)
+    plot_3d_data(X, title="Generated 3D Clustering Data", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
 
     # K-Means clustering
     k_clusters = st.sidebar.slider('Number of Clusters', 2, 5, 3)
@@ -98,8 +111,8 @@ elif model_type == 'K-Means Clustering':
     kmeans_model.fit(X)
     labels = kmeans_model.predict(X)
 
-    # Plot clustering results
-    plot_data(X, labels=labels, title=f"K-Means Clustering (k={k_clusters})", xlabel="Feature 1", ylabel="Feature 2")
+    # Plot 3D clustering results
+    plot_3d_data(X, labels=labels, title=f"K-Means Clustering (k={k_clusters}) in 3D", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
 
 elif model_type == 'Perceptron':
     # Generate linearly separable data for perceptron
