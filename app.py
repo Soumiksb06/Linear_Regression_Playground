@@ -1,5 +1,9 @@
 import streamlit as st
 import numpy as np
+import tensorflow as tf
+from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2, preprocess_input, decode_predictions
+from tensorflow.keras.preprocessing.image import img_to_array
+from PIL import Image
 import plotly.graph_objects as go
 import plotly.express as px
 from sklearn.linear_model import LinearRegression, Perceptron
@@ -27,7 +31,6 @@ def plot_data(X, Y=None, labels=None, Y_pred=None, title="Data Plot", xlabel="X"
 
     fig.update_layout(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
     st.plotly_chart(fig)
-
 
 # Function to plot decision boundary for classification models
 def plot_decision_boundary(model, X, Y, title):
@@ -57,23 +60,39 @@ def plot_3d_data(X, labels=None, title="3D Data Plot", xlabel="X", ylabel="Y", z
     fig.update_layout(scene=dict(xaxis_title=xlabel, yaxis_title=ylabel, zaxis_title=zlabel), title=title)
     st.plotly_chart(fig)
 
+# Load a pre-trained image classification model
+@st.cache_resource
+def load_model():
+    model = MobileNetV2(weights='imagenet')
+    return model
+
+# Function to preprocess and classify an image
+def classify_image(image, model):
+    image = image.resize((224, 224))  # Resize to the model input size
+    image = img_to_array(image)  # Convert image to array
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
+    image = preprocess_input(image)  # Preprocess for MobileNetV2
+    preds = model.predict(image)
+    return decode_predictions(preds, top=3)[0]  # Get top 3 predictions
+
 # Title and introduction
-st.title('Interactive Machine Learning Models with 3D Clustering Visualization')
+st.title('Interactive Machine Learning Models with 3D Clustering and Image Classification')
 
 # Sidebar for model selection
 st.sidebar.header("Model and Data Controls")
-model_type = st.sidebar.selectbox('Choose Model', ('Linear Regression', 'Polynomial Regression', 'SVM', 'K-Means Clustering (3D)', 'Perceptron'))
+model_type = st.sidebar.selectbox('Choose Model', ('Linear Regression', 'Polynomial Regression', 'SVM', 'K-Means Clustering (3D)', 'Perceptron', 'Image Classification'))
 
-# Number of data points and noise
-n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
-noise = st.sidebar.slider('Noise Level', 0, 5, 2)
+# Number of data points and noise (for non-image models)
+if model_type != 'Image Classification':
+    n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
+    noise = st.sidebar.slider('Noise Level', 0, 5, 2)
 
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
     # For Polynomial Regression, use a polynomial data generator
     X = np.random.rand(n_points, 1) * 10
     degree = st.sidebar.slider('Degree of Polynomial', 2, 5, 1)
-    
+
     # Generate polynomial data
     coefficients = np.random.randn(degree + 1)
     Y = np.polyval(coefficients, X.ravel()) + np.random.randn(n_points) * noise
@@ -135,6 +154,26 @@ elif model_type == 'Perceptron':
 
     # Plot decision boundary
     plot_decision_boundary(perceptron_model, X, Y, "Perceptron Decision Boundary")
+
+elif model_type == 'Image Classification':
+    st.sidebar.write("### Upload an Image to Classify")
+    uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
+    if uploaded_file is not None:
+        # Display the uploaded image
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+
+        # Load MobileNetV2 model
+        model = load_model()
+
+        # Classify the image
+        preds = classify_image(image, model)
+
+        # Show predictions
+        st.write("### Predictions:")
+        for pred in preds:
+            st.write(f"{pred[1]}: {pred[2] * 100:.2f}% confidence")
 
 # Sidebar for making predictions (for regression models)
 if model_type in ['Linear Regression', 'Polynomial Regression']:
