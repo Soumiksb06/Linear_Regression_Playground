@@ -98,7 +98,7 @@ model_type = st.sidebar.selectbox('Choose Model', ('Linear Regression', 'Polynom
 if model_type != 'Image Classification':
     n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
     noise = st.sidebar.slider('Noise Level', 0, 5, 2)
-
+    
 # Model descriptions and formulas
 if model_type == 'Linear Regression':
     st.write("""
@@ -210,7 +210,7 @@ elif model_type == 'Image Classification':
     $$
     where $z_i$ are the logits for each class.
     """)
-
+    
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
     # For Polynomial Regression, use a polynomial data generator
