@@ -68,12 +68,14 @@ def load_model():
 
 # Function to preprocess and classify an image
 def classify_image(image, model):
+    image = image.convert('RGB')  # Ensure the image is in RGB format (this fixes PNG issues)
     image = image.resize((224, 224))  # Resize to the model input size
     image = img_to_array(image)  # Convert image to array
     image = np.expand_dims(image, axis=0)  # Add batch dimension
     image = preprocess_input(image)  # Preprocess for MobileNetV2
     preds = model.predict(image)
     return decode_predictions(preds, top=3)[0]  # Get top 3 predictions
+
 
 # Title and introduction
 st.title('Interactive Machine Learning Models with 3D Clustering and Image Classification')
