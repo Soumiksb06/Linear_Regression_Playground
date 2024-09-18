@@ -185,105 +185,45 @@ elif model_type == 'Image Classification':
 
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
-    # For Polynomial Regression, use a polynomial data generator
-    X = np.random.rand(n_points, 1) * 10
-    degree = st.sidebar.slider('Degree of Polynomial', 2, 5, 1)
-
-    # Generate polynomial data
-    coefficients = np.random.randn(degree + 1)
-    Y = np.polyval(coefficients, X.ravel()) + np.random.randn(n_points) * noise
-
-    # Plot the polynomial data
-    plot_data(X, Y, title="Generated Polynomial Data", xlabel="X", ylabel="Y")
-
-    # Linear and Polynomial Regression models
+    X, Y = make_classification(n_samples=n_points, n_features=1, n_informative=1, n_clusters_per_class=1, noise=noise)
+    X = X.reshape(-1, 1)
     if model_type == 'Linear Regression':
         model = LinearRegression()
         model.fit(X, Y)
         Y_pred = model.predict(X)
-        st.write(f"### Linear Regression Equation: Y = {model.coef_[0]:.2f} * X + {model.intercept_:.2f}")
-
+        plot_data(X, Y, Y_pred=Y_pred, title="Linear Regression")
     elif model_type == 'Polynomial Regression':
-        poly_model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+        poly_model = make_pipeline(PolynomialFeatures(3), LinearRegression())
         poly_model.fit(X, Y)
         Y_pred = poly_model.predict(X)
-        st.write(f"### Polynomial Regression (Degree {degree})")
-
-    # Plot predictions
-    plot_data(X, Y, Y_pred=Y_pred, title=f"{model_type} Fit", xlabel="X", ylabel="Y")
+        plot_data(X, Y, Y_pred=Y_pred, title="Polynomial Regression")
 
 elif model_type == 'SVM':
-    # Generate classification data
-    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10, random_state=42)
-    plot_data(X, labels=Y, title="Generated Classification Data", xlabel="Feature 1", ylabel="Feature 2")
-
-    # Train SVM model
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_clusters_per_class=1, noise=noise)
     svm_model = SVC(kernel='linear')
     svm_model.fit(X, Y)
-
-    # Plot decision boundary
-    plot_decision_boundary(svm_model, X, Y, "SVM Decision Boundary")
+    plot_decision_boundary(svm_model, X, Y, title="SVM Decision Boundary")
 
 elif model_type == 'K-Means Clustering (3D)':
-    # Generate random data for 3D clustering
-    X, _ = make_blobs(n_samples=n_points, centers=4, n_features=3, cluster_std=noise, random_state=42)
-    plot_3d_data(X, title="Generated 3D Clustering Data", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
-
-    # K-Means clustering
-    k_clusters = st.sidebar.slider('Number of Clusters', 2, 5, 3)
-    kmeans_model = KMeans(n_clusters=k_clusters)
-    kmeans_model.fit(X)
-    labels = kmeans_model.predict(X)
-
-    # Plot 3D clustering results
-    plot_3d_data(X, labels=labels, title=f"K-Means Clustering (k={k_clusters}) in 3D", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
+    X, _ = make_blobs(n_samples=n_points, centers=3, n_features=3, cluster_std=noise)
+    kmeans = KMeans(n_clusters=3)
+    labels = kmeans.fit_predict(X)
+    plot_3d_data(X, labels, title="3D K-Means Clustering")
 
 elif model_type == 'Perceptron':
-    # Generate linearly separable data for perceptron
-    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10, random_state=42)
-    plot_data(X, labels=Y, title="Generated Perceptron Data", xlabel="Feature 1", ylabel="Feature 2")
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_clusters_per_class=1, noise=noise)
+    perc_model = Perceptron()
+    perc_model.fit(X, Y)
+    plot_decision_boundary(perc_model, X, Y, title="Perceptron Decision Boundary")
 
-    # Train perceptron model
-    perceptron_model = Perceptron()
-    perceptron_model.fit(X, Y)
-    st.write("### Perceptron Model Trained")
-
-    # Plot decision boundary
-    plot_decision_boundary(perceptron_model, X, Y, "Perceptron Decision Boundary")
-
-# Image Classification section
 elif model_type == 'Image Classification':
-    st.sidebar.write("### Upload an Image to Classify")
-    uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
+    uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
     if uploaded_file is not None:
-        try:
-            # Display the uploaded image
-            image = Image.open(uploaded_file)
-            st.image(image, caption="Uploaded Image", use_column_width=True)
-
-            # Load the pre-trained model and classify the image
-            model = load_model()
-
-            if model is not None:
-                st.write("Classifying...")
-                preds = classify_image(image, model)
-
-                # Show the predictions
-                if preds:
-                    st.write("### Top Predictions:")
-                    for i, (imagenet_id, label, score) in enumerate(preds):
-                        st.write(f"{i + 1}. **{label}**: {score * 100:.2f}%")
-                else:
-                    st.error("No predictions were made. Try uploading a different image.")
-        except Exception as e:
-            st.error(f"An error occurred: {e}")
-
-# Sidebar for making predictions (for regression models)
-if model_type in ['Linear Regression', 'Polynomial Regression']:
-    new_X = st.sidebar.number_input('Enter a new value for X:', value=5.0)
-    if model_type == 'Linear Regression':
-        new_Y_pred = model.predict([[new_X]])[0]
-    else:
-        new_Y_pred = poly_model.predict([[new_X]])[0]
-    st.sidebar.write(f"Predicted value for X = {new_X}: Y = {new_Y_pred:.2f}")
+        image = Image.open(uploaded_file)
+        st.image(image, caption="Uploaded Image", use_column_width=True)
+        model = load_model()
+        preds = classify_image(image, model)
+        if preds:
+            st.write("Top 3 Predictions:")
+            for pred in preds:
+                st.write(f"**{pred[1]}**: {round(pred[2]*100, 2)}% confidence")
