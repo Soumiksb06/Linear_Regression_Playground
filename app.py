@@ -68,14 +68,24 @@ def load_model():
 
 # Function to preprocess and classify an image
 def classify_image(image, model):
-    image = image.convert('RGB')  # Ensure the image is in RGB format (this fixes PNG issues)
-    image = image.resize((224, 224))  # Resize to the model input size
-    image = img_to_array(image)  # Convert image to array
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
-    image = preprocess_input(image)  # Preprocess for MobileNetV2
-    preds = model.predict(image)
-    return decode_predictions(preds, top=3)[0]  # Get top 3 predictions
+    try:
+        image = image.convert('RGB')  # Ensure the image is in RGB format (fixes PNG issues)
+        image = image.resize((224, 224))  # Resize to the model input size
+        image = img_to_array(image)  # Convert image to array
+        image = np.expand_dims(image, axis=0)  # Add batch dimension
+        image = preprocess_input(image)  # Preprocess for MobileNetV2
+        preds = model.predict(image)
 
+        # Check if the model prediction is successful
+        decoded_preds = decode_predictions(preds, top=3)
+        if len(decoded_preds) > 0:
+            return decoded_preds[0]  # Return the top 3 predictions
+        else:
+            st.error("Prediction failed: empty result.")
+            return []
+    except Exception as e:
+        st.error(f"Error classifying the image: {e}")
+        return []
 
 # Title and introduction
 st.title('Interactive Machine Learning Models with 3D Clustering and Image Classification')
@@ -241,24 +251,33 @@ elif model_type == 'Perceptron':
     # Plot decision boundary
     plot_decision_boundary(perceptron_model, X, Y, "Perceptron Decision Boundary")
 
+# Image Classification section
 elif model_type == 'Image Classification':
-    # Upload and classify an image
-    st.sidebar.write("Upload an image to classify:")
+    st.sidebar.write("### Upload an Image to Classify")
     uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
     if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        try:
+            # Display the uploaded image
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image", use_column_width=True)
 
-        # Load MobileNetV2 model
-        model = load_model()
+            # Load the pre-trained model and classify the image
+            model = load_model()
 
-        # Classify the image
-        preds = classify_image(image, model)
+            if model is not None:
+                st.write("Classifying...")
+                preds = classify_image(image, model)
 
-        # Show predictions
-        st.write("### Predictions:")
-        for pred in preds:
-            st.write(f"{pred[1]}: {pred[2] * 100:.2f}% confidence")
+                # Show the predictions
+                if preds:
+                    st.write("### Top Predictions:")
+                    for i, (imagenet_id, label, score) in enumerate(preds):
+                        st.write(f"{i + 1}. **{label}**: {score * 100:.2f}%")
+                else:
+                    st.error("No predictions were made. Try uploading a different image.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
 # Sidebar for making predictions (for regression models)
 if model_type in ['Linear Regression', 'Polynomial Regression']:
