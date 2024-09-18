@@ -1,78 +1,122 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
-from sklearn.linear_model import LinearRegression
+import plotly.express as px
+import plotly.graph_objects as go
+from sklearn.linear_model import LinearRegression, Perceptron
+from sklearn.svm import SVC
+from sklearn.cluster import KMeans
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.pipeline import make_pipeline
+from sklearn.datasets import make_classification, make_blobs
+
+# Function to generate interactive plot using Plotly
+def plot_data(X, Y=None, labels=None, title="Data Plot", xlabel="X", ylabel="Y"):
+    fig = go.Figure()
+    
+    if labels is not None:
+        # If there are labels (e.g., for clustering)
+        fig.add_trace(go.Scatter(x=X[:, 0], y=X[:, 1], mode='markers', marker=dict(color=labels, colorscale='Viridis')))
+    else:
+        fig.add_trace(go.Scatter(x=X, y=Y, mode='markers', name="Data Points"))
+
+    fig.update_layout(title=title, xaxis_title=xlabel, yaxis_title=ylabel)
+    st.plotly_chart(fig)
 
 # Title and Introduction
-st.title('Interactive Regression: Linear vs Polynomial')
+st.title('Interactive Machine Learning Models')
 st.write("""
-Welcome to the interactive regression model demo! You can create data points, select different models, and visualize 
-how Linear and Polynomial Regression fit lines to the data in real-time.
+This interactive app allows you to explore different machine learning models like Linear Regression, Polynomial Regression,
+Support Vector Machines (SVM), K-Means Clustering, and Perceptrons.
 """)
 
-# Section to create data points
-st.sidebar.header("Generate Data Points")
+# Sidebar for user input
+st.sidebar.header("Model and Data Controls")
 
-# User input for data points and noise level
-n_points = st.sidebar.slider('Number of Data Points', min_value=5, max_value=100, value=50)
-noise = st.sidebar.slider('Noise Level', min_value=0, max_value=10, value=3)
-X = np.random.rand(n_points, 1) * 10  # Random X values
-Y = 2 * X + 5 + np.random.randn(n_points, 1) * noise  # Linear relationship with noise
+# Select the model
+model_type = st.sidebar.selectbox(
+    'Choose the Model Type',
+    ('Linear Regression', 'Polynomial Regression', 'SVM', 'K-Means Clustering', 'Perceptron')
+)
 
-# Plot the generated data points
-st.write("### Scatter Plot of Generated Data")
-fig, ax = plt.subplots()
-ax.scatter(X, Y, color='blue', label='Data Points')
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.title("Scatter Plot of Data")
-st.pyplot(fig)
+# Generate dataset
+n_points = st.sidebar.slider('Number of Data Points', 50, 300, 100)
+noise = st.sidebar.slider('Noise Level', 0, 5, 2)
 
-# User selects model type (Linear or Polynomial)
-model_type = st.sidebar.selectbox('Select Model Type', ('Linear Regression', 'Polynomial Regression'))
-
-# Linear Regression Model
-if model_type == 'Linear Regression':
-    model = LinearRegression()
-    model.fit(X, Y)
-    Y_pred = model.predict(X)
-
-    # Display the linear regression equation
-    st.write(f"### Linear Regression Equation: Y = {model.coef_[0][0]:.2f} * X + {model.intercept_[0]:.2f}")
-
-# Polynomial Regression Model
-elif model_type == 'Polynomial Regression':
-    degree = st.sidebar.slider('Degree of Polynomial', min_value=2, max_value=10, value=2)
+if model_type in ['Linear Regression', 'Polynomial Regression']:
+    # Generate random linear data
+    X = np.random.rand(n_points, 1) * 10  # Random X values
+    Y = 2 * X + 5 + np.random.randn(n_points, 1) * noise  # Linear relationship with noise
     
-    poly_model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
-    poly_model.fit(X, Y)
-    Y_pred = poly_model.predict(X)
+    plot_data(X, Y, title="Generated Data", xlabel="X", ylabel="Y")
 
-    # Display information about polynomial regression
-    st.write(f"### Polynomial Regression (Degree {degree})")
-    st.write("Polynomial regression allows the model to fit more complex curves.")
+    if model_type == 'Linear Regression':
+        # Linear Regression
+        model = LinearRegression()
+        model.fit(X, Y)
+        Y_pred = model.predict(X)
+        st.write(f"### Linear Regression Equation: Y = {model.coef_[0][0]:.2f} * X + {model.intercept_[0]:.2f}")
+        
+    elif model_type == 'Polynomial Regression':
+        # Polynomial Regression
+        degree = st.sidebar.slider('Degree of Polynomial', 2, 10, 2)
+        poly_model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+        poly_model.fit(X, Y)
+        Y_pred = poly_model.predict(X)
+        st.write(f"### Polynomial Regression (Degree {degree})")
+        
+    # Plot predictions
+    fig = px.scatter(x=X.ravel(), y=Y.ravel(), title=f"{model_type} Fit", labels={'x': 'X', 'y': 'Y'})
+    fig.add_traces(go.Scatter(x=X.ravel(), y=Y_pred.ravel(), mode='lines', name=f'{model_type} Line'))
+    st.plotly_chart(fig)
 
-# Plot the regression line along with data points
-st.write(f"### {model_type} Fit to Data")
-fig, ax = plt.subplots()
-ax.scatter(X, Y, color='blue', label='Data Points')
-ax.plot(X, Y_pred, color='red', label=f'{model_type} Line')
-plt.xlabel("X")
-plt.ylabel("Y")
-plt.title(f"{model_type} Fit")
-ax.legend()
-st.pyplot(fig)
+elif model_type == 'SVM':
+    # Generate classification data
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10)
+    plot_data(X, labels=Y, title="Generated Classification Data", xlabel="Feature 1", ylabel="Feature 2")
 
-# User input for prediction of new values
+    # Create and train SVM model
+    svm_model = SVC(kernel='linear')
+    svm_model.fit(X, Y)
+
+    # Plot decision boundary
+    fig = px.scatter(x=X[:, 0], y=X[:, 1], color=Y, title="SVM Classification", labels={'x': 'Feature 1', 'y': 'Feature 2'})
+    st.plotly_chart(fig)
+
+elif model_type == 'K-Means Clustering':
+    # Generate random data for clustering
+    X, _ = make_blobs(n_samples=n_points, centers=3, cluster_std=noise, random_state=42)
+    plot_data(X, title="Generated Clustering Data", xlabel="Feature 1", ylabel="Feature 2")
+
+    # K-Means clustering
+    k_clusters = st.sidebar.slider('Number of Clusters', 2, 5, 3)
+    kmeans_model = KMeans(n_clusters=k_clusters)
+    kmeans_model.fit(X)
+    labels = kmeans_model.predict(X)
+
+    # Plot clustering results
+    plot_data(X, labels=labels, title=f"K-Means Clustering (k={k_clusters})", xlabel="Feature 1", ylabel="Feature 2")
+
+elif model_type == 'Perceptron':
+    # Generate linearly separable data for perceptron
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10)
+    plot_data(X, labels=Y, title="Generated Perceptron Data", xlabel="Feature 1", ylabel="Feature 2")
+
+    # Perceptron model
+    perceptron_model = Perceptron()
+    perceptron_model.fit(X, Y)
+    st.write("### Perceptron Model Trained")
+    
+    # Visualize decision boundary
+    fig = px.scatter(x=X[:, 0], y=X[:, 1], color=Y, title="Perceptron Classification", labels={'x': 'Feature 1', 'y': 'Feature 2'})
+    st.plotly_chart(fig)
+
+# Sidebar for predictions
 st.sidebar.header("Make Predictions")
-new_X = st.sidebar.number_input('Enter a new value for X:', min_value=0.0, value=5.0, step=0.1)
 
-if model_type == 'Linear Regression':
-    new_Y_pred = model.predict([[new_X]])[0][0]
-else:
-    new_Y_pred = poly_model.predict([[new_X]])[0][0]
-
-# Display the prediction
-st.write(f"### Predicted Value for X = {new_X}: Y = {new_Y_pred:.2f}")
+if model_type in ['Linear Regression', 'Polynomial Regression']:
+    new_X = st.sidebar.number_input('Enter a new value for X:', value=5.0)
+    if model_type == 'Linear Regression':
+        new_Y_pred = model.predict([[new_X]])[0][0]
+    else:
+        new_Y_pred = poly_model.predict([[new_X]])[0][0]
+    st.sidebar.write(f"Predicted value for X = {new_X}: Y = {new_Y_pred:.2f}")
