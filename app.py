@@ -101,12 +101,14 @@ if model_type != 'Image Classification':
 
 # Model descriptions and formulas
 if model_type == 'Linear Regression':
-    st.write("## Linear Regression")
-    st.write("**Description**: Linear regression models the relationship between a scalar response \( Y \) and one or more explanatory variables \( X \).")
-    
-    st.latex(r"Y = \beta_0 + \beta_1 X + \epsilon")
-    
     st.write("""
+    ## Linear Regression
+    **Description**: Linear regression models the relationship between a scalar response \( Y \) and one or more explanatory variables \( X \). The model assumes a linear relationship between the variables.
+    
+    **Formula**: 
+    \[
+    Y = \beta_0 + \beta_1 X + \epsilon
+    \]
     where:
     - \( Y \) is the dependent variable
     - \( X \) is the independent variable
@@ -116,95 +118,172 @@ if model_type == 'Linear Regression':
     """)
 
 elif model_type == 'Polynomial Regression':
-    st.write("## Polynomial Regression")
-    st.write("**Description**: Polynomial regression models the relationship between the independent variable \( X \) and the dependent variable \( Y \) as a polynomial.")
+    st.write("""
+    ## Polynomial Regression
+    **Description**: Polynomial regression is a form of regression where the relationship between the independent variable \( X \) and the dependent variable \( Y \) is modeled as an \( n \)-degree polynomial.
     
-    st.latex(r"Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \cdots + \beta_n X^n + \epsilon")
+    **Formula**:
+    \[
+    Y = \beta_0 + \beta_1 X + \beta_2 X^2 + \cdots + \beta_n X^n + \epsilon
+    \]
+    where:
+    - \( Y \) is the dependent variable
+    - \( X \) is the independent variable
+    - \( \beta_0, \beta_1, ..., \beta_n \) are the coefficients
+    - \( \epsilon \) is the error term
+    """)
 
 elif model_type == 'SVM':
-    st.write("## Support Vector Machine (SVM)")
-    st.write("**Description**: SVM is a supervised machine learning model used for classification tasks. It finds the hyperplane that best separates the data into different classes.")
+    st.write("""
+    ## Support Vector Machine (SVM)
+    **Description**: SVM is a supervised machine learning model used for classification tasks. It finds the hyperplane that best separates the data into different classes.
     
-    st.latex(r"w^T x + b = 0")
-    
-    st.write("where:")
-    st.write("- \( w \) is the weight vector")
-    st.write("- \( x \) is the input vector")
-    st.write("- \( b \) is the bias term")
+    **Decision Boundary**: The hyperplane is defined as:
+    \[
+    w^T x + b = 0
+    \]
+    where:
+    - \( w \) is the weight vector
+    - \( x \) is the input vector
+    - \( b \) is the bias term
+    """)
 
 elif model_type == 'K-Means Clustering (3D)':
-    st.write("## K-Means Clustering")
-    st.write("**Description**: K-Means is an unsupervised learning algorithm that divides the data into \( k \) clusters.")
+    st.write("""
+    ## K-Means Clustering
+    **Description**: K-Means is an unsupervised learning algorithm that divides the data into \( k \) clusters. Each data point belongs to the cluster with the nearest mean.
     
-    st.latex(r"\sum_{i=1}^{k} \sum_{x \in C_i} \| x - \mu_i \|^2")
+    **Objective**: Minimize the sum of squared distances between data points and their respective cluster centers:
+    \[
+    \sum_{i=1}^{k} \sum_{x \in C_i} \| x - \mu_i \|^2
+    \]
+    where:
+    - \( C_i \) is the set of points in cluster \( i \)
+    - \( \mu_i \) is the mean of cluster \( i \)
+    """)
 
 elif model_type == 'Perceptron':
-    st.write("## Perceptron")
-    st.write("**Description**: The perceptron is a linear classifier used for binary classification tasks.")
+    st.write("""
+    ## Perceptron
+    **Description**: The perceptron is a linear classifier used for binary classification tasks. It updates its weights iteratively to find a hyperplane that separates the data.
     
-    st.write("### Activation Function")
-    st.write("The perceptron uses a step activation function:")
-    
-    st.latex(r"y = \text{sign}(w^T x + b)")
-    
-    st.write("where:")
-    st.write("- \( w \) is the weight vector")
-    st.write("- \( x \) is the input vector")
-    st.write("- \( b \) is the bias term")
+    **Formula**: The prediction is based on:
+    \[
+    y = \text{sign}(w^T x + b)
+    \]
+    where:
+    - \( w \) is the weight vector
+    - \( x \) is the input vector
+    - \( b \) is the bias term
+    """)
 
 elif model_type == 'Image Classification':
-    st.write("## Image Classification using MobileNetV2")
-    st.write("**Description**: MobileNetV2 is a lightweight deep learning model designed for mobile and embedded vision applications.")
+    st.write("""
+    ## Image Classification using MobileNetV2
+    **Description**: MobileNetV2 is a lightweight deep learning model designed for mobile and embedded vision applications. It performs efficient image classification tasks on a wide variety of objects.
+    """)
 
 # Generate dataset based on selected model
 if model_type in ['Linear Regression', 'Polynomial Regression']:
+    # For Polynomial Regression, use a polynomial data generator
+    X = np.random.rand(n_points, 1) * 10
+    degree = st.sidebar.slider('Degree of Polynomial', 2, 5, 1)
+
+    # Generate polynomial data
+    coefficients = np.random.randn(degree + 1)
+    Y = np.polyval(coefficients, X.ravel()) + np.random.randn(n_points) * noise
+
+    # Plot the polynomial data
+    plot_data(X, Y, title="Generated Polynomial Data", xlabel="X", ylabel="Y")
+
+    # Linear and Polynomial Regression models
     if model_type == 'Linear Regression':
-        # Generate linear data
-        X = np.random.rand(n_points, 1) * 10
-        Y = 2 * X.ravel() + np.random.randn(n_points) * noise
-        X = X.reshape(-1, 1)
         model = LinearRegression()
         model.fit(X, Y)
         Y_pred = model.predict(X)
-        plot_data(X, Y, Y_pred=Y_pred, title="Linear Regression")
+        st.write(f"### Linear Regression Equation: Y = {model.coef_[0]:.2f} * X + {model.intercept_:.2f}")
 
     elif model_type == 'Polynomial Regression':
-        # Generate polynomial data
-        X = np.random.rand(n_points, 1) * 10
-        degree = st.sidebar.slider('Degree of Polynomial', 2, 5, 2)
-        poly = PolynomialFeatures(degree)
-        X_poly = poly.fit_transform(X)
-        model = LinearRegression()
-        model.fit(X_poly, Y)
-        Y_pred = model.predict(X_poly)
-        plot_data(X, Y, Y_pred=Y_pred, title="Polynomial Regression")
+        poly_model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+        poly_model.fit(X, Y)
+        Y_pred = poly_model.predict(X)
+        st.write(f"### Polynomial Regression (Degree {degree})")
+
+    # Plot predictions
+    plot_data(X, Y, Y_pred=Y_pred, title=f"{model_type} Fit", xlabel="X", ylabel="Y")
 
 elif model_type == 'SVM':
-    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_clusters_per_class=1, noise=noise)
+    # Generate classification data
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10, random_state=42)
+    plot_data(X, labels=Y, title="Generated Classification Data", xlabel="Feature 1", ylabel="Feature 2")
+
+    # Train SVM model
     svm_model = SVC(kernel='linear')
     svm_model.fit(X, Y)
-    plot_decision_boundary(svm_model, X, Y, title="SVM Decision Boundary")
+
+    # Plot decision boundary
+    plot_decision_boundary(svm_model, X, Y, "SVM Decision Boundary")
 
 elif model_type == 'K-Means Clustering (3D)':
-    X, _ = make_blobs(n_samples=n_points, centers=3, n_features=3, cluster_std=noise)
-    kmeans = KMeans(n_clusters=3)
-    labels = kmeans.fit_predict(X)
-    plot_3d_data(X, labels, title="3D K-Means Clustering")
+    # Generate random data for 3D clustering
+    X, _ = make_blobs(n_samples=n_points, centers=4, n_features=3, cluster_std=noise, random_state=42)
+    plot_3d_data(X, title="Generated 3D Clustering Data", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
+
+    # K-Means clustering
+    k_clusters = st.sidebar.slider('Number of Clusters', 2, 5, 3)
+    kmeans_model = KMeans(n_clusters=k_clusters)
+    kmeans_model.fit(X)
+    labels = kmeans_model.predict(X)
+
+    # Plot 3D clustering results
+    plot_3d_data(X, labels=labels, title=f"K-Means Clustering (k={k_clusters}) in 3D", xlabel="Feature 1", ylabel="Feature 2", zlabel="Feature 3")
 
 elif model_type == 'Perceptron':
-    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_clusters_per_class=1, noise=noise)
-    perc_model = Perceptron()
-    perc_model.fit(X, Y)
-    plot_decision_boundary(perc_model, X, Y, title="Perceptron Decision Boundary")
+    # Generate linearly separable data for perceptron
+    X, Y = make_classification(n_samples=n_points, n_features=2, n_informative=2, n_redundant=0, n_repeated=0, n_classes=2, n_clusters_per_class=1, flip_y=noise / 10, random_state=42)
+    plot_data(X, labels=Y, title="Generated Perceptron Data", xlabel="Feature 1", ylabel="Feature 2")
 
+    # Train perceptron model
+    perceptron_model = Perceptron()
+    perceptron_model.fit(X, Y)
+    st.write("### Perceptron Model Trained")
+
+    # Plot decision boundary
+    plot_decision_boundary(perceptron_model, X, Y, "Perceptron Decision Boundary")
+
+# Image Classification section
 elif model_type == 'Image Classification':
-    uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
+    st.sidebar.write("### Upload an Image to Classify")
+    uploaded_file = st.sidebar.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+
     if uploaded_file is not None:
-        image = Image.open(uploaded_file)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
-        model = load_model()
-        preds = classify_image(image, model)
-        if preds:
-            st.write("Top 3 Predictions:")
-            for pred in preds:
-                st.write(f"**{pred[1]}**: {round(pred[2]*100, 2)}% confidence")
+        try:
+            # Display the uploaded image
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Uploaded Image", use_column_width=True)
+
+            # Load the pre-trained model and classify the image
+            model = load_model()
+
+            if model is not None:
+                st.write("Classifying...")
+                preds = classify_image(image, model)
+
+                # Show the predictions
+                if preds:
+                    st.write("### Top Predictions:")
+                    for i, (imagenet_id, label, score) in enumerate(preds):
+                        st.write(f"{i + 1}. **{label}**: {score * 100:.2f}%")
+                else:
+                    st.error("No predictions were made. Try uploading a different image.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+
+# Sidebar for making predictions (for regression models)
+if model_type in ['Linear Regression', 'Polynomial Regression']:
+    new_X = st.sidebar.number_input('Enter a new value for X:', value=5.0)
+    if model_type == 'Linear Regression':
+        new_Y_pred = model.predict([[new_X]])[0]
+    else:
+        new_Y_pred = poly_model.predict([[new_X]])[0]
+    st.sidebar.write(f"Predicted value for X = {new_X}: Y = {new_Y_pred:.2f}")
